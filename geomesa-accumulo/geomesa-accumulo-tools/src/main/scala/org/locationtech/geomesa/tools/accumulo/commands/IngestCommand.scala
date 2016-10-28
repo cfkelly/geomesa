@@ -36,11 +36,16 @@ class IngestCommand(parent: JCommander) extends CommandWithCatalog(parent) with 
   def isDistributedUrl(url: String) = remotePrefixes.exists(url.startsWith)
 
   override def execute(): Unit = {
+    import org.locationtech.geomesa.accumulo.AccumuloProperties.IndexProperties.NUM_SPLITS
+
     ensureSameFs(remotePrefixes)
 
     val fmtParam = Option(params.format).flatMap(f => Try(Formats.withName(f.toLowerCase(Locale.US))).toOption)
     lazy val fmtFile = params.files.flatMap(f => Try(Formats.withName(getFileExtension(f))).toOption).headOption
     val fmt = fmtParam.orElse(fmtFile).getOrElse(Other)
+
+    //TODO: Add a check to prevent trying to change number of shards for a schema already in use
+    NUM_SPLITS.set(params.num_splits) // Sets number of shards for each index
 
     if (fmt == SHP) {
       // If someone is ingesting file from hdfs or S3, we add the Hadoop URL Factories to the JVM.
@@ -104,5 +109,8 @@ object IngestCommand {
 
     @Parameter(description = "<file>...", required = true)
     var files: java.util.List[String] = new util.ArrayList[String]()
+
+    @Parameter(names = Array("--shards"), description = "Number of shards to split indexes into")
+    var num_splits: String = 4.toString
   }
 }

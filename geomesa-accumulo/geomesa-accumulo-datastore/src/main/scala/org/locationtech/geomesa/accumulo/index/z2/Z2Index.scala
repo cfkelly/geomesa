@@ -17,10 +17,10 @@ import org.opengis.feature.simple.SimpleFeatureType
 
 // current version - deprecated non-point support in favor of xz, ids in row key, per-attribute vis
 case object Z2Index extends AccumuloFeatureIndexType with Z2WritableIndex with Z2QueryableIndex {
-
+  import org.locationtech.geomesa.accumulo.AccumuloProperties.IndexProperties
   val Z2IterPriority = 23
 
-  val NUM_SPLITS = 4 // can't be more than Byte.MaxValue (127)
+  val NUM_SPLITS = IndexProperties.NUM_SPLITS.get.toByte // can't be more than Byte.MaxValue (127)
   val SPLIT_ARRAYS = (0 until NUM_SPLITS).map(_.toByte).toArray.map(Array(_)).toSeq
 
   // the bytes of z we keep for complex geoms

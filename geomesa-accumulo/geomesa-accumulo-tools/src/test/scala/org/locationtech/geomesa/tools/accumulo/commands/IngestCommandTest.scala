@@ -12,6 +12,7 @@ import java.io.File
 
 import com.typesafe.config.{ConfigFactory, ConfigRenderOptions}
 import org.junit.runner.RunWith
+import org.locationtech.geomesa.accumulo.data.AccumuloDataStore
 import org.locationtech.geomesa.tools.accumulo.{AccumuloRunner, GeoMesaConnectionParams}
 import org.locationtech.geomesa.utils.geotools.Conversions
 import org.specs2.mutable.Specification
@@ -64,6 +65,26 @@ class IngestCommandTest extends Specification {
       val args = Array("ingest", "--mock", "-i", id, "-u", "foo", "-p", "bar", "-c", id,
         "--converter", confFile.getPath, "-s", confFile.getPath, dataFile.getPath)
       args.length mustEqual 15
+
+      val command = AccumuloRunner.createCommand(args)
+      command.execute()
+
+      val ds = DataStoreParamsHelper.createDataStore(command.params.asInstanceOf[GeoMesaConnectionParams])
+      import Conversions._
+      val features = ds.getFeatureSource("renegades").getFeatures.features().toList
+      features.size mustEqual 3
+      features.map(_.get[String]("name")) must containTheSameElementsAs(Seq("Hermione", "Harry", "Severus"))
+    }
+
+    "configure number of shards" >> {
+      val id = nextId
+
+      val confFile = new File(this.getClass.getClassLoader.getResource("examples/example1-csv.conf").getFile)
+      val dataFile = new File(this.getClass.getClassLoader.getResource("examples/example1.csv").getFile)
+
+      val args = Array("ingest", "--mock", "-i", id, "-u", "foo", "-p", "bar", "-c", id,
+        "--converter", confFile.getPath, "-s", confFile.getPath, "--shards", "8", dataFile.getPath)
+      args.length mustEqual 17
 
       val command = AccumuloRunner.createCommand(args)
       command.execute()
