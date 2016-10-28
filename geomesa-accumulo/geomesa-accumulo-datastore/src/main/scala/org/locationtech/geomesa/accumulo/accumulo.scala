@@ -29,6 +29,8 @@ package object accumulo {
   val DEFAULT_ATTRIBUTE_NAMES                = "geomesa.index.shapefile.attribute-names"
   val DEFAULT_CACHE_SIZE_NAME                = "geomesa.index.cache-size"
   val DEFAULT_CACHE_TABLE_NAME               = "geomesa.index.cache-table"
+  val DEFAULT_INDEX_SPLITS_NAME              = "geomesa.index.z2.splits"
+
   val DEFAULT_AGGREGATOR_CLASS_PROPERTY_NAME = "geomesa.iterators.aggregator-class"
   val DEFAULT_FILTER_PROPERTY_NAME           = "geomesa.iterators.filter-name"
 
@@ -76,6 +78,10 @@ package object accumulo {
 
     object StatsProperties {
       val STAT_COMPACTION_MILLIS = PropAndDefault("geomesa.stats.compact.millis", (3600 * 1000L).toString) // one hour
+    }
+
+    object IndexProperties {
+      val NUM_SPLITS = PropAndDefault(DEFAULT_INDEX_SPLITS_NAME, 4.toString)
     }
 
     case class PropAndDefault(property: String, default: String) {
